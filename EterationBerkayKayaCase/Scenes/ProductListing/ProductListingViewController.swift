@@ -349,13 +349,11 @@ extension ProductsListingViewController: UICollectionViewDataSource, UICollectio
     
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         collectionView.deselectItem(at: indexPath, animated: true)
-          
-//          guard indexPath.row < viewModel.numberOfItems else { return }
-//          let selectedProduct = viewModel.getProductAt(index: indexPath.row)
-//          let detailViewModel = ProductDetailViewModel(product: selectedProduct)
-//          let detailVC = ProductDetailViewController(viewModel: detailViewModel)
-//          
-//          navigationController?.pushViewController(detailVC, animated: true)
+          guard indexPath.row < viewModel.numberOfItems else { return }
+          let selectedProduct = viewModel.getProductAt(index: indexPath.row)
+          let detailViewModel = ProductDetailViewModel(product: selectedProduct)
+          let detailVC = ProductDetailViewController(viewModel: detailViewModel)
+          navigationController?.pushViewController(detailVC, animated: true)
     }
 }
 
