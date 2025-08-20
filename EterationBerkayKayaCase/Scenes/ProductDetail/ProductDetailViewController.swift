@@ -92,6 +92,8 @@ private extension ProductDetailViewController {
             productTitleLabel.leadingAnchor.constraint(equalTo: self.view.leadingAnchor, constant: 16),
             productTitleLabel.trailingAnchor.constraint(equalTo: self.view.trailingAnchor, constant: -36)
         ])
+        productTitleLabel.setContentHuggingPriority(.required, for: .vertical)
+        productTitleLabel.setContentCompressionResistancePriority(.required, for: .vertical)
     }
         
     private func addProductDescriptionLabel() {
@@ -99,11 +101,14 @@ private extension ProductDetailViewController {
         productDescriptionLabel.translatesAutoresizingMaskIntoConstraints = false
         
         NSLayoutConstraint.activate([
-            productDescriptionLabel.topAnchor.constraint(equalTo: productTitleLabel.bottomAnchor, constant: 16),
+            productDescriptionLabel.topAnchor.constraint(equalTo: productTitleLabel.bottomAnchor, constant: 0),
             productDescriptionLabel.leadingAnchor.constraint(equalTo: self.view.leadingAnchor, constant: 16),
             productDescriptionLabel.trailingAnchor.constraint(equalTo: self.view.trailingAnchor, constant: -16),
             productDescriptionLabel.bottomAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.bottomAnchor, constant: -70)
         ])
+        
+        productDescriptionLabel.setContentHuggingPriority(.defaultLow, for: .vertical)
+        productDescriptionLabel.setContentCompressionResistancePriority(.defaultHigh, for: .vertical)
     }
     
     private func addPriceStackView() {
@@ -156,7 +161,7 @@ private extension ProductDetailViewController {
     }
     
     private func configureHeaderLabel() {
-        headerLabel.text = "E-Market"
+        headerLabel.text = viewModel.productName
         headerLabel.font = UIFont.montserratExtraBold(size: 24)
         headerLabel.textColor = .white
         headerLabel.textAlignment = .left
