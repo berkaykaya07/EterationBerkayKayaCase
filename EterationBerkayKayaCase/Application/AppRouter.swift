@@ -5,7 +5,6 @@
 //  Created by Berkay on 20.08.2025.
 //
 
-
 import UIKit
 
 final class AppRouter {
@@ -19,7 +18,7 @@ final class AppRouter {
         let mainTabBar = createMainTabBarController()
         self.tabBarController = mainTabBar
         window.rootViewController = mainTabBar
-        setupBasketBadge()
+        setupBadges()
     }
 
     deinit {
@@ -67,7 +66,7 @@ private extension AppRouter {
                 iconName: "iconBasket"
             ),
             createNavigationController(
-                rootViewController: UIViewController(),
+                rootViewController: FavoritesViewController(viewModel: FavoritesViewModel()),
                 title: "Favorites",
                 iconName: "iconFavourite"
             ),
@@ -91,13 +90,35 @@ private extension AppRouter {
         return navigationController
     }
     
-    private func setupBasketBadge() {
+    private func setupBadges() {
         updateBasketBadge()
+        updateFavoritesBadge()
         
         NotificationCenter.default.addObserver(
             self,
             selector: #selector(basketDidUpdate),
             name: .basketDidUpdate,
+            object: nil
+        )
+        
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(favoritesDidUpdate),
+            name: .favoriteItemAdded,
+            object: nil
+        )
+        
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(favoritesDidUpdate),
+            name: .favoriteItemRemoved,
+            object: nil
+        )
+        
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(favoritesDidUpdate),
+            name: .allFavoritesCleared,
             object: nil
         )
     }
@@ -112,6 +133,12 @@ private extension AppRouter {
         }
     }
     
+    @objc private func favoritesDidUpdate() {
+        DispatchQueue.main.async { [weak self] in
+            self?.updateFavoritesBadge()
+        }
+    }
+    
     private func updateBasketBadge() {
         guard let tabBarController = tabBarController else { return }
         
@@ -123,6 +150,20 @@ private extension AppRouter {
             tabBarController.tabBar.items?[basketTabIndex].badgeColor = .systemRed
         } else {
             tabBarController.tabBar.items?[basketTabIndex].badgeValue = nil
+        }
+    }
+    
+    private func updateFavoritesBadge() {
+        guard let tabBarController = tabBarController else { return }
+        
+        let totalFavorites = FavoriteService.shared.getFavoriteCount()
+        let favoritesTabIndex = 2
+        
+        if totalFavorites > 0 {
+            tabBarController.tabBar.items?[favoritesTabIndex].badgeValue = "\(totalFavorites)"
+            tabBarController.tabBar.items?[favoritesTabIndex].badgeColor = .systemYellow
+        } else {
+            tabBarController.tabBar.items?[favoritesTabIndex].badgeValue = nil
         }
     }
 }
