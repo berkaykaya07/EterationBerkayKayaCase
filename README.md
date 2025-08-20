@@ -423,7 +423,7 @@ private func getCachedItems() -> [BasketItem]? {
 ### Installation Steps
 1. **Clone the repository**
    ```bash
-   git clone [https://github.com/berkaykaya07/EterationBerkayKayaCase]
+   git clone https://github.com/berkaykaya07/EterationBerkayKayaCase
    cd EterationBerkayKayaCase
    ```
 
