@@ -27,12 +27,7 @@ final class ProductDetailViewController: BaseViewController<ProductDetailViewMod
         setupUI()
         configureContents()
         subscribeViewModel()
-        setupNotificationObservers()
         updateFavoriteButtonState()
-    }
-    
-    deinit {
-        NotificationCenter.default.removeObserver(self)
     }
 }
 
@@ -225,22 +220,7 @@ private extension ProductDetailViewController {
         addToCartButton.layer.cornerRadius = 4
         addToCartButton.addTarget(self, action: #selector(addToCartButtonTapped), for: .touchUpInside)
     }
-    
-    private func setupNotificationObservers() {
-        NotificationCenter.default.addObserver(
-            self,
-            selector: #selector(favoriteStatusChanged),
-            name: .favoriteItemAdded,
-            object: nil
-        )
-        
-        NotificationCenter.default.addObserver(
-            self,
-            selector: #selector(favoriteStatusChanged),
-            name: .favoriteItemRemoved,
-            object: nil
-        )
-    }
+
 }
 
 // MARK: - Actions
@@ -268,19 +248,6 @@ private extension ProductDetailViewController {
         impactFeedback.impactOccurred()
         viewModel.addToCart()
       }
-    
-    @objc private func favoriteStatusChanged(_ notification: Notification) {
-        guard let userInfo = notification.userInfo,
-              let notificationProductId = userInfo["productId"] as? String,
-              let currentProductId = viewModel.productId,
-              notificationProductId == currentProductId else {
-            return
-        }
-        
-        DispatchQueue.main.async { [weak self] in
-            self?.updateFavoriteButtonState()
-        }
-    }
     
     
     private func updateFavoriteButtonState() {
@@ -333,6 +300,12 @@ private extension ProductDetailViewController {
             guard let self = self else { return }
             DispatchQueue.main.async {
                 ToastHelper.showError(in: self.view, message: errorMessage)
+            }
+        }
+        
+        viewModel.favoriteStatusChanged = { [weak self] isFavorite in
+            DispatchQueue.main.async {
+                self?.updateFavoriteButtonState()
             }
         }
     }

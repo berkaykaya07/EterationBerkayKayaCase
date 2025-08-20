@@ -18,7 +18,6 @@ final class ProductCollectionViewCell: UICollectionViewCell {
     static let identifier = "ProductCollectionViewCell"
     
     // MARK: - Properties
-    weak var viewModel: ProductCollectionViewCellProtocol?
     weak var delegate: ProductCollectionViewCellDelegate?
     private var product: Product?
     
@@ -36,20 +35,14 @@ final class ProductCollectionViewCell: UICollectionViewCell {
         super.init(frame: frame)
         setupUI()
         configureContents()
-        setupNotificationObservers()
     }
     
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
     
-    deinit {
-        NotificationCenter.default.removeObserver(self)
-    }
-    
     override func prepareForReuse() {
         super.prepareForReuse()
-        viewModel = nil
         delegate = nil
         product = nil
         priceLabel.text = nil
@@ -58,15 +51,11 @@ final class ProductCollectionViewCell: UICollectionViewCell {
     }
     
     // MARK: - Public Methods
-    func set(product: Product) {
+    func set(product: Product, isFavorite: Bool) {
         self.product = product
         priceLabel.text = "\(product.price ?? "") ₺"
         productNameLabel.text = product.name
-        
-        if let productId = product.id {
-            let isFavorite = FavoriteService.shared.isProductInFavorites(productId: productId)
-            updateFavoriteButtonState(isFavorite: isFavorite)
-        }
+        updateFavoriteButtonState(isFavorite: isFavorite)
     }
 }
 
@@ -173,7 +162,7 @@ private extension ProductCollectionViewCell {
     }
     
     private func configureFavouriteButton() {
-        favoriteButton.setImage(UIImage(systemName: "star.fill"), for: .normal)
+        favoriteButton.setImage(UIImage(systemName: "star"), for: .normal)
         favoriteButton.tintColor = .appGray
         favoriteButton.backgroundColor = .clear
         favoriteButton.addTarget(self, action: #selector(favoriteButtonTapped), for: .touchUpInside)
@@ -226,48 +215,15 @@ private extension ProductCollectionViewCell {
     }
 }
 
-// MARK: - Setup Notification
+// MARK: - Private Methods
 private extension ProductCollectionViewCell {
-   
-    private func setupNotificationObservers() {
-        NotificationCenter.default.addObserver(
-            self,
-            selector: #selector(favoriteStatusChanged),
-            name: .favoriteItemAdded,
-            object: nil
-        )
-        
-        NotificationCenter.default.addObserver(
-            self,
-            selector: #selector(favoriteStatusChanged),
-            name: .favoriteItemRemoved,
-            object: nil
-        )
-    }
-    
-    @objc private func favoriteStatusChanged(_ notification: Notification) {
-        guard let userInfo = notification.userInfo,
-              let notificationProductId = userInfo["productId"] as? String,
-              let currentProductId = product?.id,
-              notificationProductId == currentProductId else {
-            return
-        }
-        
-        DispatchQueue.main.async { [weak self] in
-            guard let self = self, let productId = self.product?.id else { return }
-            let isFavorite = FavoriteService.shared.isProductInFavorites(productId: productId)
-            self.updateFavoriteButtonState(isFavorite: isFavorite)
-        }
-    }
     
     private func updateFavoriteButtonState(isFavorite: Bool) {
-        if isFavorite {
-            favoriteButton.tintColor = .systemYellow
-            favoriteButton.setImage(UIImage(systemName: "star.fill"), for: .normal)
-        } else {
-            favoriteButton.tintColor = .appGray
-            favoriteButton.setImage(UIImage(systemName: "star.fill"), for: .normal)
-        }
+        let imageName = isFavorite ? "star.fill" : "star"
+        let color = isFavorite ? UIColor.systemYellow : .appGray
+        
+        favoriteButton.setImage(UIImage(systemName: imageName), for: .normal)
+        favoriteButton.tintColor = color
         
         UIView.animate(withDuration: 0.2) {
             self.favoriteButton.transform = CGAffineTransform(scaleX: 1.1, y: 1.1)

@@ -65,8 +65,13 @@ final class ProductDetailViewModel: BaseViewModel, ProductDetailProtocol {
     
     // MARK: - Initialization
     init(product: Product) {
-        self.selectedProduct = product
         super.init()
+        self.selectedProduct = product
+        self.setupNotificationObservers()
+    }
+    
+    deinit {
+        NotificationCenter.default.removeObserver(self)
     }
     
     // MARK: - Public Methods
@@ -104,5 +109,32 @@ final class ProductDetailViewModel: BaseViewModel, ProductDetailProtocol {
                     self?.addToCartFailure?(error.localizedDescription)
                 }
         }
+    }
+    
+    // MARK: - Private Methods
+    private func setupNotificationObservers() {
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(handleFavoriteStatusChange),
+            name: .favoriteItemAdded,
+            object: nil
+        )
+        
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(handleFavoriteStatusChange),
+            name: .favoriteItemRemoved,
+            object: nil
+        )
+    }
+    
+    @objc private func handleFavoriteStatusChange(_ notification: Notification) {
+        guard let userInfo = notification.userInfo,
+              let notificationProductId = userInfo["productId"] as? String,
+              let currentProductId = productId,
+              notificationProductId == currentProductId else {
+            return
+        }
+        favoriteStatusChanged?(isFavorite)
     }
 }

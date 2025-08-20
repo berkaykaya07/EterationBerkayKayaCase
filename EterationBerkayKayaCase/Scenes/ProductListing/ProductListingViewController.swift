@@ -264,6 +264,7 @@ private extension ProductsListingViewController {
        selectFilterButton.addTarget(self, action: #selector(selectFilterTapped), for: .touchUpInside)
    }
 }
+
 // MARK: - Actions
 private extension ProductsListingViewController {
     
@@ -332,7 +333,8 @@ extension ProductsListingViewController: UICollectionViewDataSource, UICollectio
           }
           
           let product = viewModel.getProductAt(index: indexPath.row)
-          cell.set(product: product)
+          let isFavorite = viewModel.isFavorite(productId: product.id)
+          cell.set(product: product, isFavorite: isFavorite)
           cell.delegate = self
           return cell
     }
@@ -491,6 +493,18 @@ private extension ProductsListingViewController {
             guard let self = self else { return }
             DispatchQueue.main.async {
                 ToastHelper.showError(in: self.view, message: errorMessage)
+            }
+        }
+        
+        viewModel.reloadSpecificItems = { [weak self] indexPath in
+            DispatchQueue.main.async {
+                guard let self = self,
+                      let cell = self.collectionView.cellForItem(at: indexPath) as? ProductCollectionViewCell else {
+                    return
+                }
+                let product = self.viewModel.getProductAt(index: indexPath.row)
+                let isFavorite = self.viewModel.isFavorite(productId: product.id)
+                cell.set(product: product, isFavorite: isFavorite)
             }
         }
     }

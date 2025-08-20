@@ -20,6 +20,7 @@ protocol ProductListingDataSource {
     func searchProducts(with searchText: String)
     func clearAllFiltersAndSearch()
     func toggleFavorite(product: Product?)
+    func isFavorite(productId: String?) -> Bool
 }
 
 protocol ProductListingEventSource {
@@ -34,10 +35,10 @@ protocol ProductListingEventSource {
     var addToCartFailure: StringClosure? { get }
     var favoriteToggleSuccess: StringClosure? { get }
     var favoriteToggleFailure: StringClosure? { get }
+    var reloadSpecificItems: ((IndexPath) -> Void)? { get }
 }
 
 protocol ProductsListingProtocol: ProductListingDataSource, ProductListingEventSource {}
-
 
 class ProductsListingViewModel: BaseViewModel, ProductsListingProtocol {
     
@@ -53,6 +54,7 @@ class ProductsListingViewModel: BaseViewModel, ProductsListingProtocol {
     var addToCartFailure: StringClosure?
     var favoriteToggleSuccess: StringClosure?
     var favoriteToggleFailure: StringClosure?
+    var reloadSpecificItems: ((IndexPath) -> Void)?
     
     // MARK: - DataSource Properties
     var numberOfItems: Int {
@@ -69,6 +71,11 @@ class ProductsListingViewModel: BaseViewModel, ProductsListingProtocol {
     
     func getCurrentFilterState() -> (SortType, Set<String>, Set<String>) {
         return (currentSortType, currentSelectedBrands, currentSelectedModels)
+    }
+    
+    func isFavorite(productId: String?) -> Bool {
+        guard let productId = productId else { return false }
+        return FavoriteService.shared.isProductInFavorites(productId: productId)
     }
     
     // MARK: - Private Properties
@@ -96,11 +103,15 @@ class ProductsListingViewModel: BaseViewModel, ProductsListingProtocol {
     private var isSearching = false
     private let searchQueue = DispatchQueue(label: "search.queue", qos: .userInitiated)
     
-    
     // MARK: - Initialization
     init(productRepository: ProductsRepositoryProtocol = ProductsRepository(productService: ProductService())) {
         self.productRepository = productRepository
         super.init()
+        setupNotificationObservers()
+    }
+    
+    deinit {
+        NotificationCenter.default.removeObserver(self)
     }
     
     func didLoad() {
@@ -247,6 +258,41 @@ class ProductsListingViewModel: BaseViewModel, ProductsListingProtocol {
             "\(productName) removed from favorites" :
             "\(productName) added to favorites! ⭐"
         favoriteToggleSuccess?(message)
+    }
+}
+
+// MARK: - Notification Handling
+private extension ProductsListingViewModel {
+    
+    private func setupNotificationObservers() {
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(handleFavoriteStatusChange),
+            name: .favoriteItemAdded,
+            object: nil
+        )
+        
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(handleFavoriteStatusChange),
+            name: .favoriteItemRemoved,
+            object: nil
+        )
+    }
+    
+    @objc private func handleFavoriteStatusChange(_ notification: Notification) {
+        guard let userInfo = notification.userInfo,
+              let notificationProductId = userInfo["productId"] as? String else {
+            return
+        }
+        
+        let activeProducts = getActiveProducts()
+        if let affectedIndex = activeProducts.firstIndex(where: { $0.id == notificationProductId }),
+           affectedIndex < cellItems.count {
+            DispatchQueue.main.async { [weak self] in
+                self?.reloadSpecificItems?(IndexPath(row: affectedIndex, section: 0))
+            }
+        }
     }
 }
 
