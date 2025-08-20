@@ -136,7 +136,7 @@ private extension FilterProductsViewController {
             sortByLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 18),
             
             sortByStackView.topAnchor.constraint(equalTo: sortByLabel.bottomAnchor, constant: 22),
-            sortByStackView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 31),
+            sortByStackView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 25),
             sortByStackView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
             
             separators[0].topAnchor.constraint(equalTo: sortByStackView.bottomAnchor, constant: 33),
