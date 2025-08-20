@@ -62,7 +62,7 @@ private extension AppRouter {
                 iconName: "iconHome"
             ),
             createNavigationController(
-                rootViewController: UIViewController(),
+                rootViewController: BasketViewController(viewModel: BasketViewModel()),
                 title: "",
                 iconName: "iconBasket"
             ),
