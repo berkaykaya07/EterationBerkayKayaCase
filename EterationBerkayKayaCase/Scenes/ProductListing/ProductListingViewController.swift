@@ -268,25 +268,25 @@ private extension ProductsListingViewController {
 private extension ProductsListingViewController {
     
     @objc private func selectFilterTapped() {
-//        let filterViewModel = FilterProductsViewModel()
-//        let (currentSort, currentBrands, currentModels) = viewModel.getCurrentFilterState()
-//        
-//        filterViewModel.setupFilterData(with: viewModel.getAllProducts(),
-//                                      currentSort: currentSort,
-//                                      currentBrands: currentBrands,
-//                                      currentModels: currentModels)
-//        
-//        filterViewModel.onFiltersApplied = { [weak self] sortType, selectedBrands, selectedModels in
-//            self?.viewModel.applyFilters(sortType: sortType,
-//                                       selectedBrands: selectedBrands,
-//                                       selectedModels: selectedModels)
-//            self?.searchBar.searchTextField.text = ""
-//            self?.dismiss(animated: true)
-//        }
-//        
-//        let filterVC = FilterProductsViewController(viewModel: filterViewModel)
-//        filterVC.modalPresentationStyle = .fullScreen
-//        present(filterVC, animated: true)
+        let filterViewModel = FilterProductsViewModel()
+        let (currentSort, currentBrands, currentModels) = viewModel.getCurrentFilterState()
+        
+        filterViewModel.setupFilterData(with: viewModel.getAllProducts(),
+                                      currentSort: currentSort,
+                                      currentBrands: currentBrands,
+                                      currentModels: currentModels)
+        
+        filterViewModel.onFiltersApplied = { [weak self] sortType, selectedBrands, selectedModels in
+            self?.viewModel.applyFilters(sortType: sortType,
+                                       selectedBrands: selectedBrands,
+                                       selectedModels: selectedModels)
+            self?.searchBar.searchTextField.text = ""
+            self?.dismiss(animated: true)
+        }
+        
+        let filterVC = FilterProductsViewController(viewModel: filterViewModel)
+        filterVC.modalPresentationStyle = .fullScreen
+        present(filterVC, animated: true)
     }
     
     private func showEmptyState(with message: String) {
@@ -389,17 +389,17 @@ extension ProductsListingViewController: UISearchBarDelegate {
             }
         }
         DispatchQueue.main.asyncAfter(deadline: .now() + searchDebounceDelay,
-                                    execute: searchWorkItem!)
+                                      execute: searchWorkItem!)
     }
     
     func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
         searchWorkItem?.cancel()
         searchBar.resignFirstResponder()
-          
-          if let searchText = searchBar.text?.trimmingCharacters(in: .whitespacesAndNewlines),
-             !searchText.isEmpty {
-              viewModel.searchProducts(with: searchText)
-          }
+        
+        if let searchText = searchBar.text?.trimmingCharacters(in: .whitespacesAndNewlines),
+           !searchText.isEmpty {
+            viewModel.searchProducts(with: searchText)
+        }
     }
     
     func searchBarCancelButtonClicked(_ searchBar: UISearchBar) {
@@ -410,13 +410,13 @@ extension ProductsListingViewController: UISearchBarDelegate {
      }
      
     func searchBarTextDidBeginEditing(_ searchBar: UISearchBar) {
-          searchBar.setShowsCancelButton(true, animated: true)
-      }
-      
-      func searchBarTextDidEndEditing(_ searchBar: UISearchBar) {
-          searchBar.setShowsCancelButton(false, animated: true)
-          searchWorkItem?.cancel()
-      }
+        searchBar.setShowsCancelButton(true, animated: true)
+    }
+    
+    func searchBarTextDidEndEditing(_ searchBar: UISearchBar) {
+        searchBar.setShowsCancelButton(false, animated: true)
+        searchWorkItem?.cancel()
+    }
 }
 
 // MARK: - ViewModel Subscription

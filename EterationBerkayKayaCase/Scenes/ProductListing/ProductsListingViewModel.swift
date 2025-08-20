@@ -372,12 +372,3 @@ private extension ProductsListingViewModel {
         reloadData?()
     }
 }
-
-
-enum SortType {
-    case none
-    case oldToNew
-    case newToOld
-    case priceHighToLow
-    case priceLowToHigh
-}
