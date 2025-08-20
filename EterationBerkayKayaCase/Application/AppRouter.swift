@@ -19,8 +19,12 @@ final class AppRouter {
         let mainTabBar = createMainTabBarController()
         self.tabBarController = mainTabBar
         window.rootViewController = mainTabBar
+        setupBasketBadge()
     }
 
+    deinit {
+        NotificationCenter.default.removeObserver(self)
+    }
 }
 
 // MARK: - TabBar Configuration
@@ -53,7 +57,7 @@ private extension AppRouter {
     private func createViewControllers() -> [UINavigationController] {
         return [
             createNavigationController(
-                rootViewController: ViewController(),
+                rootViewController: ProductsListingViewController(viewModel: ProductsListingViewModel()),
                 title: "",
                 iconName: "iconHome"
             ),
@@ -86,5 +90,39 @@ private extension AppRouter {
         )
         return navigationController
     }
+    
+    private func setupBasketBadge() {
+        updateBasketBadge()
+        
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(basketDidUpdate),
+            name: .basketDidUpdate,
+            object: nil
+        )
+    }
+}
 
+// MARK: - Actions
+private extension AppRouter {
+    
+    @objc private func basketDidUpdate() {
+        DispatchQueue.main.async { [weak self] in
+            self?.updateBasketBadge()
+        }
+    }
+    
+    private func updateBasketBadge() {
+        guard let tabBarController = tabBarController else { return }
+        
+        let totalItems = BasketService.shared.getTotalItemCount()
+        let basketTabIndex = 1
+        
+        if totalItems > 0 {
+            tabBarController.tabBar.items?[basketTabIndex].badgeValue = "\(totalItems)"
+            tabBarController.tabBar.items?[basketTabIndex].badgeColor = .systemRed
+        } else {
+            tabBarController.tabBar.items?[basketTabIndex].badgeValue = nil
+        }
+    }
 }
